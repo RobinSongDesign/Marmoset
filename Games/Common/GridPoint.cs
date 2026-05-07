@@ -1,8 +1,8 @@
 using System;
 
-namespace Marmoset.Games.Snake
+namespace Marmoset.Games.Common
 {
-    internal readonly struct GridPoint : IEquatable<GridPoint>
+    public readonly struct GridPoint : IEquatable<GridPoint>
     {
         public GridPoint(int x, int y)
         {

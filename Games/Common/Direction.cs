@@ -1,4 +1,4 @@
-namespace Marmoset.Games.Snake
+namespace Marmoset.Games.Common
 {
     internal enum Direction
     {
