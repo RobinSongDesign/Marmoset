@@ -55,7 +55,7 @@ namespace Marmoset.Components
             else
             {
                 _owner.SetPressedDirection(-1);
-                _owner.SetDirection(4);
+                _owner.SetDirection(-1);
             }
 
             return new IntPtr(1);

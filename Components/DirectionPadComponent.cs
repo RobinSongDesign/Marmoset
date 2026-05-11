@@ -6,7 +6,7 @@ namespace Marmoset.Components
 {
     public class DirectionPadComponent : GH_Component
     {
-        private int _direction = 4;
+        private int _direction = -1;
         private DirectionPadKeyboardFilter _keyboardFilter;
         private int _pressedDirection = -1;
 
@@ -51,7 +51,7 @@ namespace Marmoset.Components
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddIntegerParameter("", "", "Direction value: 0 Up, 1 Down, 2 Left, 3 Right, 4 Center.", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("", "", "Direction value: -1 None, 0 Up, 1 Down, 2 Left, 3 Right, 4 Center.", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)

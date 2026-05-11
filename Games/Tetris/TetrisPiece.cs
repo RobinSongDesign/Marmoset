@@ -10,7 +10,7 @@ namespace Marmoset.Games.Tetris
     {
         private TetrominoType Type { get; }
         public GridPoint Position {get; private set;}
-        public int Rotation { get; private set; }
+        public int RotationState { get; private set; } = 0;
 
         public List<GridPoint> Cells()
         {
@@ -19,10 +19,11 @@ namespace Marmoset.Games.Tetris
             for(int i = 0; i < offsets.Length; i++)
             {
                 var offset = offsets[i];
-                for(int r = 0; r < Rotation; r++)
+                for(int r = 0; r < RotationState; r++)
                 {
-                    offset = RotateClockwise(offset);
+                    offset = RotatePoint(offset);
                 }
+
                 cells.Add(new GridPoint(Position.X + offset.X, Position.Y + offset.Y));
             }
             return cells;
@@ -32,7 +33,6 @@ namespace Marmoset.Games.Tetris
         {
             Type = type;
             Position = midpoint;
-            Rotation = 0;
         }
 
         private GridPoint[] GetOffsetsForType(TetrominoType type)
@@ -65,11 +65,25 @@ namespace Marmoset.Games.Tetris
             }
         }
 
-        private GridPoint RotateClockwise(GridPoint p)
+        private GridPoint RotatePoint(GridPoint p)
         {
             if (Type == TetrominoType.O)
                 return p;
             return new GridPoint(p.Y, -p.X);
+        }
+
+        public TetrisPiece RotateClockwise()
+        {
+            var newPiece = new TetrisPiece(Type, Position);
+            newPiece.RotationState = (RotationState + 1) % 4;
+            return newPiece;
+        }
+
+        public TetrisPiece Move(int dx, int dy)
+        {
+            var newPiece = new TetrisPiece(Type, new GridPoint(Position.X + dx, Position.Y + dy));
+            newPiece.RotationState = RotationState;
+            return newPiece;
         }
     }
 }

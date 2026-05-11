@@ -106,7 +106,7 @@ namespace Marmoset.Components
                 return base.RespondToMouseUp(sender, e);
 
             PadOwner.SetPressedDirection(-1);
-            PadOwner.SetDirection(4);
+            PadOwner.SetDirection(-1);
             return GH_ObjectResponse.Release;
         }
 
