@@ -92,7 +92,7 @@ namespace Marmoset.Components
                     _scheduledFrame = false;
                 }
 
-                if (!_game.GameOver && actionValue != -1)
+                if (!_game.GameOver)
                     ScheduleNextFrame(interval);
             }
             else
