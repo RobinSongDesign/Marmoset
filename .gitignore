@@ -20,3 +20,16 @@ __pycache__/
 *.pyc
 *.egg-info/
 .pytest_cache/
+
+# binary data
+*.dll
+*.exe
+*.so
+*.gh
+*.onnx
+*.zip
+*.data
+*.pth
+
+
+

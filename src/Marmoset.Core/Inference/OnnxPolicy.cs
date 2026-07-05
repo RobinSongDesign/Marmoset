@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 
@@ -25,6 +27,55 @@ namespace Marmoset.Core
         private readonly string _outputName;
         private readonly bool _outputIsInt64;
         private bool _disposed;
+
+        static OnnxPolicy()
+        {
+            // 宿主进程（如 Rhino）加载本插件时不解析插件自身的 deps.json，P/Invoke 会
+            // 回落到系统搜索路径并命中 System32 里 Windows 自带的旧版 onnxruntime.dll
+            // （仅支持 IR version ≤ 9，加载新导出的模型时报 "Unsupported model IR version"）。
+            // 这里显式把 ORT 的 P/Invoke 绑定到随插件分发的 runtimes/<rid>/native 副本。
+            try
+            {
+                NativeLibrary.SetDllImportResolver(typeof(InferenceSession).Assembly, ResolveNativeLibrary);
+            }
+            catch (InvalidOperationException)
+            {
+                // 同进程内其他插件已为该程序集注册过 resolver；保持其行为。
+            }
+        }
+
+        private static IntPtr ResolveNativeLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        {
+            if (!libraryName.StartsWith("onnxruntime", StringComparison.OrdinalIgnoreCase))
+                return IntPtr.Zero;
+
+            string baseDir = Path.GetDirectoryName(typeof(OnnxPolicy).Assembly.Location);
+            if (string.IsNullOrEmpty(baseDir))
+                return IntPtr.Zero;
+
+            string arch = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "arm64" : "x64";
+            string rid, fileName;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                rid = "win-" + arch;
+                fileName = libraryName + ".dll";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                rid = "osx-" + arch;
+                fileName = "lib" + libraryName + ".dylib";
+            }
+            else
+            {
+                return IntPtr.Zero;
+            }
+
+            string candidate = Path.Combine(baseDir, "runtimes", rid, "native", fileName);
+            if (File.Exists(candidate) && NativeLibrary.TryLoad(candidate, out IntPtr handle))
+                return handle;
+
+            return IntPtr.Zero; // 交回默认探测（开发/测试环境 deps.json 可用）
+        }
 
         public OnnxPolicy(string modelPath)
         {
