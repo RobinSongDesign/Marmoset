@@ -1,6 +1,6 @@
 namespace Marmoset.Games.Common
 {
-    internal enum Direction
+    public enum Direction
     {
         None = -1,
         Up,

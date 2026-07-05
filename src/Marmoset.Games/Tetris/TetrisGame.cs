@@ -22,6 +22,15 @@ namespace Marmoset.Games.Tetris
 
         public bool GameOver { get; private set; }
 
+        /// <summary>棋盘宽度（格）。（RL 封装新增）</summary>
+        public int Width => _board.Width;
+
+        /// <summary>棋盘高度（格）。（RL 封装新增）</summary>
+        public int Height => _board.Height;
+
+        /// <summary>当前活动块类型；无活动块时为 null。（RL 封装新增）</summary>
+        public TetrominoType? CurrentPieceType => _currentPiece?.Type;
+
         public string Status
         {
             get
@@ -73,7 +82,8 @@ namespace Marmoset.Games.Tetris
                     TryMove(1, 0);
                     break;
                 case TetrisAction.HardDrop:
-                    while (TryMove(0, 1))
+                    // 修复：重力方向是 -Y（见 Step），原实现 (0, 1) 会把块向上顶。
+                    while (TryMove(0, -1))
                     {
                     }
                     LockCurrentPiece();
@@ -99,7 +109,9 @@ namespace Marmoset.Games.Tetris
         private void SpawnNewPiece()
         {
             var pieceType = (TetrominoType)_random.Next(0, 7);
-            _currentPiece = new TetrisPiece(pieceType, new GridPoint(_board.Width / 2, _board.Height - 1));
+            // 修复：O/S 形有 +Y 偏移的格子，锚点放在顶行会越界导致刚开局即 Game Over；
+            // 下移一行后 7 种块的初始格子全部落在棋盘内。
+            _currentPiece = new TetrisPiece(pieceType, new GridPoint(_board.Width / 2, _board.Height - 2));
 
             if (!_board.CanPlace(_currentPiece))
                 GameOver = true;

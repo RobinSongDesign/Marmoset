@@ -8,7 +8,7 @@ namespace Marmoset.Games.Tetris
 {
     public class TetrisPiece
     {
-        private TetrominoType Type { get; }
+        public TetrominoType Type { get; }
         public GridPoint Position {get; private set;}
         public int RotationState { get; private set; } = 0;
 

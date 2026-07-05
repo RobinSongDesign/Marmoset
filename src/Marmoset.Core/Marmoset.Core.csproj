@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- 纯 .NET 运行时核心。硬性约束：不得引用 Grasshopper / RhinoCommon / WinForms（见 docs/DESIGN.md 第 3、9 条） -->
+    <TargetFramework>net7.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Version>0.1.0</Version>
+    <Title>Marmoset.Core</Title>
+    <Description>Simulation runtime and reinforcement-learning bridge for Rhino/Grasshopper.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MessagePack" Version="3.1.7" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
+  </ItemGroup>
+
+</Project>

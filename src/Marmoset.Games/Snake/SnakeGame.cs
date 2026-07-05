@@ -5,7 +5,7 @@ using Marmoset.Games.Common;
 
 namespace Marmoset.Games.Snake
 {
-    internal class SnakeGame
+    public class SnakeGame
     {
         private FoodSpawner _foodSpawner;
         private SnakeBody _snake;
@@ -27,6 +27,12 @@ namespace Marmoset.Games.Snake
         public GridPoint Food { get; private set; }
 
         public IReadOnlyList<GridPoint> SnakeSegments => _snake.Segments;
+
+        /// <summary>蛇头当前格子。（RL 封装新增，GH 组件不依赖）</summary>
+        public GridPoint HeadPosition => _snake.Head;
+
+        /// <summary>蛇当前实际朝向（非 pending 输入）。（RL 封装新增）</summary>
+        public Direction CurrentDirection => _snake.Direction;
 
         public string Status
         {
@@ -79,6 +85,57 @@ namespace Marmoset.Games.Snake
                 return;
             }
 
+            Advance();
+        }
+
+        /// <summary>
+        /// RL 驱动入口（新增）：直接设定朝向并立即推进一步，绕过 pendingDirection /
+        /// 未 started 时 Step 无效的键盘输入语义。180° 回头输入仍被忽略（保持原样朝向前进）。
+        /// </summary>
+        public void StepIn(Direction direction)
+        {
+            if (GameOver)
+                return;
+
+            if (direction != Direction.None)
+                _snake.SetDirection(direction);
+
+            _pendingDirection = Direction.None;
+            _started = true;
+            Advance();
+        }
+
+        /// <summary>
+        /// 预判（新增）：若下一步朝 direction 移动一格，是否会死（撞墙或撞身体）。
+        /// 与 Advance 的碰撞判定完全一致；不改变任何状态。GameOver 时恒返回 true。
+        /// </summary>
+        public bool WouldDie(Direction direction)
+        {
+            if (GameOver)
+                return true;
+
+            var head = _snake.Head;
+            GridPoint next;
+            switch (direction)
+            {
+                case Direction.Up: next = new GridPoint(head.X, head.Y + 1); break;
+                case Direction.Down: next = new GridPoint(head.X, head.Y - 1); break;
+                case Direction.Left: next = new GridPoint(head.X - 1, head.Y); break;
+                case Direction.Right: next = new GridPoint(head.X + 1, head.Y); break;
+                default: return true;
+            }
+
+            if (_wrap)
+                next = Wrap(next);
+            else if (IsOutside(next))
+                return true;
+
+            bool grow = next == Food;
+            return _snake.Contains(next, grow);
+        }
+
+        private void Advance()
+        {
             var nextHead = _snake.GetNextHead();
 
             if (_wrap)
